@@ -3,8 +3,11 @@ name: Upload Dataset to Google Drive via DVC
 on:
   push:
     branches:
-      - master
-  
+      - dev
+    paths:
+      - '**/*.dvc'
+      - 'dvc.yaml'
+      - 'dvc.lock'
 
 jobs:
   push_dataset:
@@ -31,12 +34,12 @@ jobs:
           GOOGLE_DRIVE_CREDENTIALS: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}
         run: |
           echo "$GOOGLE_DRIVE_CREDENTIALS" > credentials.json
-          export GDRIVE_CREDENTIALS_DATA="$(cat credentials.json)"
 
       - name: Configure DVC remote
         run: |
           dvc remote modify gdrive_remote gdrive_use_service_account true
-
+          dvc remote modify gdrive_remote gdrive_service_account_json_file_path credentials.json
+      
       - name: Push dataset to Google Drive
         run: |
           dvc push
