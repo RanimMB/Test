@@ -1,0 +1,53 @@
+name: Upload Dataset to Google Drive via DVC
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - '**/*.dvc'
+      - 'dvc.yaml'
+      - 'dvc.lock'
+
+jobs:
+  push_dataset:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install DVC and Google Drive dependencies
+        run: |
+          pip install dvc[gdrive]
+
+      - name: Set up Google Drive credentials
+        env:
+          GOOGLE_DRIVE_CREDENTIALS: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}
+        run: |
+          echo "$GOOGLE_DRIVE_CREDENTIALS" > credentials.json
+
+      - name: Configure DVC remote
+        run: |
+          dvc remote modify gdrive_remote gdrive_use_service_account true
+          dvc remote modify gdrive_remote service_account_json_path credentials.json
+
+      - name: Push dataset to Google Drive
+        run: |
+          dvc push
+
+      - name: Commit .dvc files
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add Data/*.dvc
+          git commit -m "Auto: Updated dataset via GitHub Actions" || echo "Nothing to commit"
+          git push origin dev || echo "Nothing to push"
