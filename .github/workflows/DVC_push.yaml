@@ -11,10 +11,7 @@ on:
 
 jobs:
   push_dataset:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ ubuntu-latest, macos-latest ]
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
