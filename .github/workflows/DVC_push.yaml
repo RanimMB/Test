@@ -3,11 +3,8 @@ name: Upload Dataset to Google Drive via DVC
 on:
   push:
     branches:
-      - dev
-    paths:
-      - '**/*.dvc'
-      - 'dvc.yaml'
-      - 'dvc.lock'
+      - master
+    workflow_dispatch:
 
 jobs:
   push_dataset:
